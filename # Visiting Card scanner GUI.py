@@ -101,19 +101,19 @@ mainmenu.add_cascade(label="Aim", menu=m1)
 
 m2 = Menu(mainmenu, tearoff=0)
 m2.add_command(
-    label="|| Electronics and Communication engineering student ||", font=("Times", 13)
+    label="|| Computer Science and Engineering Student ||", font=("Times", 13)
 )
 m2.add_command(label="|| Coding Enthusiast ||", font=("Times", 13))
 root.config(menu=mainmenu)
 mainmenu.add_cascade(label="About us", menu=m2)
 
 m3 = Menu(mainmenu, tearoff=0)
-m3.add_command(label="E-mail: mathurkartik1234@gmail.com", font=("Times", 13))
+m3.add_command(label="E-mail: tanvimoholkar02@gmail.com", font=("Times", 13))
 m3.add_separator()
-m3.add_command(label="Mobile: +91-9587823004", font=("Times", 13))
+m3.add_command(label="", font=("Times", 13))
 m3.add_separator()
 m3.add_command(
-    label="LinkedIn: https://www.linkedin.com/in/kartik-mathur-97a825160",
+    label="",
     font=("Times", 13),
 )
 root.config(menu=mainmenu)
