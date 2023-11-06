@@ -13,6 +13,7 @@ from tkinter import filedialog
 # Pytesseract module importing
 import pytesseract
 import os.path
+import re
 
 root = Tk()
 
@@ -20,7 +21,7 @@ root = Tk()
 root.geometry("800x500")
 root.maxsize(1000, 500)
 root.minsize(600, 500)
-root.title("Visiting card scanner")
+root.title("Business card scanner")
 
 
 # function for uploading file to GUI
@@ -58,33 +59,73 @@ def upload_file():
         start = len(filename) - filename_rev.index("/") - 1
 
 
-# function for conversion
-def convert():
+# Function for post-processing and data extraction
+def extract_information(text):
+    # Regular expressions for name, email, phone, address, and website
+    name_pattern = r"(?:Mr\. )?\b[A-Z][a-z]+(?: [A-Z][a-z]+)*\b"
+    email_pattern = r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b"
+    phone_pattern = r"\b\d{3}-\d{3}-\d{4}\b"
+    url_pattern = r"(https?://\S+|www\.\S+)"
+    address_pattern = r"(\d+ [A-Za-z]+ [\w\s]+)"
+
+    # Use regular expressions to find matches in the text
+    name_match = re.search(name_pattern, text)
+    email_matches = re.findall(email_pattern, text)
+    phone_matches = re.findall(phone_pattern, text)
+    url_matches = re.findall(url_pattern, text)
+    address_matches = re.findall(address_pattern, text)
+
+    # Process and return the extracted information
+    name = name_match.group() if name_match else "Name not found"
+    emails = email_matches
+    phones = phone_matches
+    urls = url_matches
+    address = address_matches[0] if address_matches else "Address not found"
+
+    return (
+        name,
+        emails,
+        phones,
+        urls,
+        address,
+    )
+
+
+# Function to display categorized information
+def display_categorized_information():
     try:
-        c_label_var.set("Output...")
+        c_label_var.set("Categorized Output...")
         pytesseract.pytesseract.tesseract_cmd = (
             r"/opt/homebrew/Cellar/tesseract/5.3.3/bin/tesseract"
         )
         text = pytesseract.image_to_string(filename)
-        t.delete(1.0, END)
-        t.insert(1.0, text)
-        root1 = Toplevel()
-        root1.title("Uploaded image")
-        img1 = ImageTk.PhotoImage(Image.open(filename))
-        Label(root1, image=img1).pack()
-        root1.mainloop()
+        display_information(text)
+
     except:
         t.delete(1.0, END)
         t.insert(1.0, "You have not provided any image to convert")
         tmsg.showwarning(
-            title="Alert!", message="Please provide proper formatted image"
+            title="Alert!", message="Please provide a properly formatted image"
         )
-        return
-    f_name = filename[start + 1 : last] + ".txt"
-    f_name = os.path.join(r"Database", f_name)
-    f = open(f_name, "w")
-    f.write(text)
-    f.close()
+
+
+def display_information(text):
+    # Call the extract_information function for post-processing
+    name, emails, phones, urls, address = extract_information(text)
+
+    # Display the categorized information
+    t.delete(1.0, END)
+    t.insert(1.0, f"Name: {name}\n")
+    t.insert(END, "Emails:\n")
+    for email in emails:
+        t.insert(END, f"- {email}\n")
+    t.insert(END, "Phone Numbers:\n")
+    for phone in phones:
+        t.insert(END, f"- {phone}\n")
+    t.insert(END, "Websites:\n")
+    for url in urls:
+        t.insert(END, f"- {url}\n")
+    t.insert(END, f"Address: {address}\n")
 
 
 # Menu bar and navigation tab creation
@@ -100,20 +141,18 @@ root.config(menu=mainmenu)
 mainmenu.add_cascade(label="Aim", menu=m1)
 
 m2 = Menu(mainmenu, tearoff=0)
-m2.add_command(
-    label="|| Computer Science and Engineering Student ||", font=("Times", 13)
-)
+m2.add_command(label="Computer Science and Engineering Student", font=("Times", 13))
 m2.add_command(label="|| Coding Enthusiast ||", font=("Times", 13))
 root.config(menu=mainmenu)
 mainmenu.add_cascade(label="About us", menu=m2)
 
 m3 = Menu(mainmenu, tearoff=0)
-m3.add_command(label="E-mail: tanvimoholkar02@gmail.com", font=("Times", 13))
+m3.add_command(label="", font=("Times", 13))
 m3.add_separator()
 m3.add_command(label="", font=("Times", 13))
 m3.add_separator()
 m3.add_command(
-    label="",
+    label="LinkedIn: ",
     font=("Times", 13),
 )
 root.config(menu=mainmenu)
@@ -146,7 +185,7 @@ Button(
 f1.pack(pady=10, fill="x")
 p_label_var = StringVar()
 p_label_var.set("Please upload an image to scan")
-l = Label(textvariable=p_label_var, fg="red", bg="white")
+l = Label(textvariable=p_label_var, fg="pink", bg="white")
 l.pack()
 
 
@@ -169,6 +208,6 @@ Button(
     bg="#F58D4B",
     font=("Times", 15),
     width=70,
-    command=convert,
+    command=display_categorized_information,
 ).pack(pady="10", side="bottom")
 root.mainloop()
